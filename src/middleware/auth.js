@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/user.js';
 
 async function auth(req, res, next) {
-	
 	try {
 		const token = req.header('Authorization').replace('Bearer ', '');
 		const decoded = jwt.verify(token, 'thisistaskapp');
