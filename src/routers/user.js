@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { User } from '../models/user.js';
 import { auth } from '../middleware/auth.js';
 
@@ -73,11 +74,20 @@ router.patch('/users/me', auth, async (req, res) => {
 
 router.delete('/users/me', auth, async (req, res) => {
 	try {
+		console.log(req.user);
 		await req.user.remove();
 		res.send(req.user);
 	} catch (error) {
-		res.status(500).send();
+		res.status(500).send(error);
 	}
+});
+
+const upload = multer({
+	dest: 'avatars',
+});
+
+router.post('/users/me/avatar', upload.single('avatar'), (req, res) => {
+	res.send();
 });
 
 export { router };

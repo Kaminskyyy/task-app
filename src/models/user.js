@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import validator from 'validator';
 import jwt from 'jsonwebtoken';
+import { Task } from './task.js';
 
 const userSchema = new mongoose.Schema({
 	name: {
@@ -47,6 +48,14 @@ const userSchema = new mongoose.Schema({
 			required: true,
 		}
 	}]
+}, {
+	timestamps: true,
+});
+
+userSchema.virtual('tasks', {
+	ref: 'Task',
+	localField: '_id',
+	foreignField: 'owner',
 });
 
 userSchema.methods.generateAuthToken = async function() {
@@ -94,6 +103,13 @@ userSchema.pre('save', async function(next) {
 		user.password = await bcrypt.hash(user.password, 8);
 	}
 
+	next();
+});
+
+userSchema.pre('remove', async function(next) {
+	const user = this;
+	await Task.deleteMany({ owner: user._id });
+	console.log('here');
 	next();
 });
 
