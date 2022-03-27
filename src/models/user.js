@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import validator from 'validator';
@@ -47,7 +48,10 @@ const userSchema = new mongoose.Schema({
 			type: String,
 			required: true,
 		}
-	}]
+	}],
+	avatar: {
+		type: Buffer,
+	}
 }, {
 	timestamps: true,
 });
@@ -74,6 +78,7 @@ userSchema.methods.toJSON = function() {
 
 	delete userObject.password;
 	delete userObject.tokens;
+	delete userObject.avatar;
 
 	return userObject;
 };
