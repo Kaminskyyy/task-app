@@ -3,6 +3,7 @@ import multer from 'multer';
 import sharp from 'sharp';
 import { User } from '../models/user.js';
 import { auth } from '../middleware/auth.js';
+import { sendWelcomeEmail, sendCancelationEmail } from '../emails/account.js';
 
 const router = new Router();
 
@@ -11,6 +12,7 @@ router.post('/users', async (req, res) => {
 
 	try { 
 		await user.save();
+		sendWelcomeEmail(user.email, user.name);
 		const token = await user.generateAuthToken();
 		res.status(201).send({ user, token });
 	} catch (error) {
@@ -75,8 +77,8 @@ router.patch('/users/me', auth, async (req, res) => {
 
 router.delete('/users/me', auth, async (req, res) => {
 	try {
-		console.log(req.user);
 		await req.user.remove();
+		sendCancelationEmail(req.user.email, req.user.name);
 		res.send(req.user);
 	} catch (error) {
 		res.status(500).send(error);
@@ -98,8 +100,10 @@ const upload = multer({
 
 router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
 	const buffer = await sharp(req.file.buffer).resize({ width: 250, height: 250 }).png().toBuffer();
+	
 	req.user.avatar = buffer;
 	await req.user.save();
+	
 	res.send();
 }, (error, req, res, next) => {
 	res.status(400).send({ error: error.message });
@@ -108,6 +112,7 @@ router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) 
 router.delete('/users/me/avatar', auth, async (req, res) => {
 	req.user.avatar = undefined;
 	await req.user.save();
+	
 	res.send();
 }, (error, req, res, next) => {
 	req.status(400).send();

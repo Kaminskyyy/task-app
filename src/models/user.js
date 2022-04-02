@@ -65,7 +65,7 @@ userSchema.virtual('tasks', {
 userSchema.methods.generateAuthToken = async function() {
 	const user = this;
 
-	const token = jwt.sign({ _id: user._id.toString() }, 'thisistaskapp');
+	const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
 	user.tokens = user.tokens.concat({ token });
 	user.save();
 
@@ -114,7 +114,6 @@ userSchema.pre('save', async function(next) {
 userSchema.pre('remove', async function(next) {
 	const user = this;
 	await Task.deleteMany({ owner: user._id });
-	console.log('here');
 	next();
 });
 
